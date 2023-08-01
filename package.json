@@ -1,0 +1,17 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "dev": "npx lerna run dev",
+    "prettier": "npx prettier --write ."
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "devDependencies": {
+    "lerna": "^7.1.4",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  }
+}
