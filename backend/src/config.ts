@@ -2,6 +2,7 @@ import { envSchema } from 'env-schema';
 import { Static, Type } from '@sinclair/typebox';
 
 const schema = Type.Object({
+  // server config
   NODE_ENV: Type.Optional(
     Type.String({
       default: 'development',

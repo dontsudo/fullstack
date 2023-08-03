@@ -17,6 +17,7 @@ import {
 } from '../../../services/post';
 import type { JwtUserPayload } from '../../../plugins/jwt';
 import { errorResponseSchema, paginationQueryStringSchema } from '../../common';
+import { NotFoundException } from '../../../lib/http-exception';
 
 const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
@@ -60,10 +61,7 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         },
       });
       if (!post) {
-        return reply.status(404).send({
-          status: 404,
-          message: 'post not found',
-        });
+        throw new NotFoundException('post not found');
       }
 
       return reply.send(post);
@@ -119,9 +117,7 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         },
       });
       if (!updatedPost) {
-        return reply.status(404).send({
-          message: 'post not found',
-        });
+        throw new NotFoundException('post not found');
       }
 
       return reply.send(updatedPost);
@@ -147,9 +143,7 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         author: user.id,
       });
       if (!deletedPost) {
-        return reply.status(404).send({
-          message: 'post not found',
-        });
+        throw new NotFoundException('post not found');
       }
 
       return reply.status(204).send();

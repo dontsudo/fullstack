@@ -1,9 +1,11 @@
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import bcrypt from 'bcrypt';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { createUser, findUserByEmail } from '../../../services/user';
+import { findUserByEmail } from '../../../services/user';
 import { authLocalBodySchema, authResponseSchema } from './schema';
 import { errorResponseSchema } from '../../common';
+import { registerUser } from '../../../services/auth';
+import { InvalidCredentialsException } from '../../../lib/http-exception';
 
 const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.post(
@@ -20,22 +22,11 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const user = await findUserByEmail(server)(email);
-      if (user) {
-        return reply.code(409).send({
-          status: 409,
-          message: 'user already exists',
-        });
-      }
-
-      const newUser = await createUser(server)({
-        email,
-        password,
-      });
+      const user = await registerUser(server)(email, password);
 
       const accessToken = await reply.jwtSign({
-        id: newUser.id,
-        email: newUser.email,
+        id: user._id,
+        email: user.email,
       });
 
       return reply.code(201).send({
@@ -60,16 +51,12 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
 
       const user = await findUserByEmail(server)(email);
       if (!user) {
-        return reply
-          .code(401)
-          .send({ status: 401, message: 'invalid crednetials' });
+        throw new InvalidCredentialsException('invalid credentials');
       }
 
       const valid = await bcrypt.compare(password, user.hashedPassword);
       if (!valid) {
-        return reply
-          .code(401)
-          .send({ status: 401, message: 'invalid crednetials' });
+        throw new InvalidCredentialsException('invalid credentials');
       }
 
       const accessToken = await reply.jwtSign({

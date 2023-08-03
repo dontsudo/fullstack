@@ -9,6 +9,7 @@ export type Post = mongoose.Document & {
   title: string;
   content: string;
   author: mongoose.Types.ObjectId;
+  tags: mongoose.Types.ObjectId[];
 };
 
 export const postSchema = new mongoose.Schema<Post>(
@@ -26,7 +27,12 @@ export const postSchema = new mongoose.Schema<Post>(
       ref: 'User',
       required: true,
     },
-
+    tags: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tag',
+      },
+    ],
     createdAt: Date,
     updatedAt: Date,
   },
