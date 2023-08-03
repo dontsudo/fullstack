@@ -5,11 +5,9 @@ import {
 } from '@fastify/type-provider-typebox';
 import bcrypt from 'bcrypt';
 
-import { UserRepository } from '../repository/user';
+import { createUser, findUserByEmail } from '../services/user';
 
 const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
-  const userRepository = UserRepository(server);
-
   server.post(
     '/auth/local/register',
     {
@@ -23,14 +21,14 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const user = await userRepository.findByEmail(email);
+      const user = await findUserByEmail(server)(email);
       if (user) {
         return reply.code(409).send({
           message: 'user already exists',
         });
       }
 
-      const newUser = await userRepository.create({
+      const newUser = await createUser(server)({
         email,
         password,
       });
@@ -58,7 +56,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const user = await userRepository.findByEmail(email);
+      const user = await findUserByEmail(server)(email);
       if (!user) {
         return reply.code(401).send({
           message: 'invalid crednetials',

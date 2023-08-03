@@ -3,16 +3,13 @@ import {
   Type,
   FastifyPluginAsyncTypebox,
 } from '@fastify/type-provider-typebox';
-
-import { UserRepository } from '../repository/user';
+import { findUserByEmail } from '../services/user';
 
 type JwtUserPayload = {
   email: string;
 };
 
 const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
-  const userRepository = UserRepository(server);
-
   server.get(
     '/user/me',
     {
@@ -31,7 +28,7 @@ const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     async (request, reply) => {
       const { email } = request.user as JwtUserPayload;
 
-      const me = await userRepository.findByEmail(email);
+      const me = await findUserByEmail(server)(email);
       if (!me) {
         return reply.code(401).send({
           message: 'user not found',
