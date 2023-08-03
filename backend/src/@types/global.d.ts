@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-import { User } from '../models/User';
-import { Post } from '../models/Post';
+import { User } from '../models/user';
+import { Post } from '../models/post';
 
 declare module 'fastify' {
   export interface FastifyInstance {

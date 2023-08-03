@@ -1,15 +1,15 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
+import idPlugin from 'mongoose-id';
 
-export interface User {
-  _id: mongoose.Types.ObjectId;
+export type User = mongoose.Document & {
   createdAt: Date;
   updatedAt: Date;
 
   email: string;
   hashedPassword: string;
-}
+};
 
-export const UserSchema = new Schema<User>(
+export const userSchema = new mongoose.Schema<User>(
   {
     email: {
       type: String,
@@ -24,6 +24,9 @@ export const UserSchema = new Schema<User>(
     updatedAt: Date,
   },
   {
+    autoCreate: true,
     timestamps: true,
   },
 );
+
+userSchema.plugin(idPlugin);

@@ -1,22 +1,17 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
+import idPlugin from 'mongoose-id';
 
-export interface Post {
-  _id: mongoose.Types.ObjectId;
+export type Post = mongoose.Document & {
   createdAt: Date;
   updatedAt: Date;
 
-  author: mongoose.Types.ObjectId;
   title: string;
   content: string;
-}
+  author: mongoose.Types.ObjectId;
+};
 
-export const PostSchema = new Schema<Post>(
+export const postSchema = new mongoose.Schema<Post>(
   {
-    author: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
     title: {
       type: String,
       index: true,
@@ -25,11 +20,19 @@ export const PostSchema = new Schema<Post>(
       type: String,
       required: true,
     },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
 
     createdAt: Date,
     updatedAt: Date,
   },
   {
+    autoCreate: true,
     timestamps: true,
   },
 );
+
+postSchema.plugin(idPlugin);
