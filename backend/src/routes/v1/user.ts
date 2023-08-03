@@ -1,13 +1,10 @@
-import fp from 'fastify-plugin';
 import {
   Type,
   FastifyPluginAsyncTypebox,
 } from '@fastify/type-provider-typebox';
-import { findUserByEmail } from '../services/user';
 
-type JwtUserPayload = {
-  email: string;
-};
+import { findUserByEmail } from '../../services/user';
+import { JwtUserPayload } from '../../plugins/jwt';
 
 const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
@@ -26,9 +23,9 @@ const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
       onRequest: [server.authenticate],
     },
     async (request, reply) => {
-      const { email } = request.user as JwtUserPayload;
+      const user = request.user as JwtUserPayload;
 
-      const me = await findUserByEmail(server)(email);
+      const me = await findUserByEmail(server)(user.email);
       if (!me) {
         return reply.code(401).send({
           message: 'user not found',
@@ -41,4 +38,4 @@ const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   );
 };
 
-export default fp(userRoute);
+export default userRoute;

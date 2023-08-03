@@ -2,6 +2,11 @@ import fp from 'fastify-plugin';
 import { FastifyPluginAsync, RouteHandlerMethod } from 'fastify';
 import jwt, { FastifyJWTOptions } from '@fastify/jwt';
 
+export type JwtUserPayload = {
+  id: string;
+  email: string;
+};
+
 const jwtPlugin: FastifyPluginAsync<FastifyJWTOptions> = async (
   server,
   opts,

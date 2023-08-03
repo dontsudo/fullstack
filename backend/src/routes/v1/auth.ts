@@ -1,11 +1,10 @@
-import fp from 'fastify-plugin';
 import {
   Type,
   FastifyPluginAsyncTypebox,
 } from '@fastify/type-provider-typebox';
 import bcrypt from 'bcrypt';
 
-import { createUser, findUserByEmail } from '../services/user';
+import { createUser, findUserByEmail } from '../../services/user';
 
 const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.post(
@@ -34,6 +33,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
       });
 
       const accessToken = await reply.jwtSign({
+        id: newUser._id,
         email: newUser.email,
       });
 
@@ -71,6 +71,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
       }
 
       const accessToken = await reply.jwtSign({
+        id: user._id,
         email: user.email,
       });
 
@@ -81,4 +82,4 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   );
 };
 
-export default fp(authRoute);
+export default authRoute;

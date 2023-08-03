@@ -1,25 +1,31 @@
 import mongoose, { Schema } from 'mongoose';
 
-export interface User {
+export interface Post {
   _id: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 
-  email: string;
-  hashedPassword: string;
+  author: mongoose.Types.ObjectId;
+  title: string;
+  content: string;
 }
 
-export const UserSchema = new Schema<User>(
+export const PostSchema = new Schema<Post>(
   {
-    email: {
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    title: {
       type: String,
       index: true,
-      unique: true,
     },
-    hashedPassword: {
+    content: {
       type: String,
       required: true,
     },
+
     createdAt: Date,
     updatedAt: Date,
   },

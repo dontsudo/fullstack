@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
+
 import { User } from '../models/User';
 
 export const findUserById = (server: FastifyInstance) => {

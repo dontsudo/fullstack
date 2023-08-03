@@ -3,11 +3,11 @@ import corsPlugin from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
-import dbPlugin from './plugins/db';
-import jwtPlugin from './plugins/jwt';
-import authRoute from './routers/auth';
-import userRoute from './routers/user';
+import { dbPlugin, jwtPlugin } from './plugins';
 import { config } from './config';
+import userRoute from './routes/v1/user';
+import authRoute from './routes/v1/auth';
+import postRoute from './routes/v1/post';
 
 export const init = async (opts: FastifyServerOptions = {}) => {
   const server = Fastify(opts).withTypeProvider<TypeBoxTypeProvider>();
@@ -29,7 +29,10 @@ export const init = async (opts: FastifyServerOptions = {}) => {
   });
   server.register(dbPlugin);
 
-  server.register(authRoute).register(userRoute);
+  server
+    .register(userRoute, { prefix: '/v1' })
+    .register(authRoute, { prefix: '/v1' })
+    .register(postRoute, { prefix: '/v1' });
 
   return server;
 };
