@@ -1,6 +1,7 @@
 import Fastify, { FastifyServerOptions } from 'fastify';
 import corsPlugin from '@fastify/cors';
 import swagger from '@fastify/swagger';
+import swaggerUI from '@fastify/swagger-ui';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 import { dbPlugin, jwtPlugin } from './plugins';
@@ -15,19 +16,31 @@ export const init = async (opts: FastifyServerOptions = {}) => {
   await server.register(swagger, {
     swagger: {
       info: {
-        title: 'backend.api',
+        title: 'fullstack.backend.api',
         version: '0.0.1',
+      },
+      securityDefinitions: {
+        bearerAuth: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+        },
       },
     },
   });
-  server.register(corsPlugin);
-  server.register(jwtPlugin, {
-    secret: config.JWT_SECRET,
-    sign: {
-      expiresIn: config.JWT_EXPIRES_IN,
-    },
+  await server.register(swaggerUI, {
+    routePrefix: '/docs',
   });
-  server.register(dbPlugin);
+
+  server
+    .register(corsPlugin)
+    .register(jwtPlugin, {
+      secret: config.JWT_SECRET,
+      sign: {
+        expiresIn: config.JWT_EXPIRES_IN,
+      },
+    })
+    .register(dbPlugin);
 
   server
     .register(userRoute, { prefix: '/v1' })

@@ -4,35 +4,34 @@ import {
 } from '@fastify/type-provider-typebox';
 
 import {
+  createPostBodySchema,
+  postSchema,
+  updatePostBodySchema,
+} from './schema';
+import {
   createPost,
   findPost,
   findPostAndDelete,
   findPostAndUpdate,
   findPosts,
-} from '../../services/post';
-import type { JwtUserPayload } from '../../plugins/jwt';
+} from '../../../services/post';
+import type { JwtUserPayload } from '../../../plugins/jwt';
+import { errorResponseSchema, paginationQueryStringSchema } from '../../common';
 
 const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
     '/post',
     {
       schema: {
-        querystring: Type.Object({
-          page: Type.Integer({
-            default: 1,
-          }),
-          limit: Type.Integer({
-            default: 10,
-          }),
-        }),
+        querystring: paginationQueryStringSchema,
       },
     },
     async (request, reply) => {
       const { page, limit } = request.query;
 
       const posts = await findPosts(server)({
-        page,
         limit,
+        page,
       });
 
       return reply.send(posts);
@@ -46,16 +45,23 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         params: Type.Object({
           id: Type.String(),
         }),
+        response: {
+          200: postSchema,
+          404: errorResponseSchema,
+        },
       },
     },
     async (request, reply) => {
       const postId = request.params.id;
 
       const post = await findPost(server)({
-        _id: postId,
+        where: {
+          _id: postId,
+        },
       });
       if (!post) {
         return reply.status(404).send({
+          status: 404,
           message: 'post not found',
         });
       }
@@ -68,16 +74,12 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     '/post',
     {
       schema: {
-        body: Type.Object({
-          title: Type.String(),
-          content: Type.String(),
-        }),
+        body: createPostBodySchema,
       },
       onRequest: [server.authenticate],
     },
     async (request, reply) => {
       const user = request.user as JwtUserPayload;
-
       const { title, content } = request.body;
 
       const post = await createPost(server)({
@@ -97,29 +99,25 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         params: Type.Object({
           id: Type.String(),
         }),
-        body: Type.Object({
-          title: Type.Optional(Type.String()),
-          content: Type.Optional(Type.String()),
-        }),
+        body: updatePostBodySchema,
       },
       onRequest: [server.authenticate],
     },
     async (request, reply) => {
       const user = request.user as JwtUserPayload;
-
       const postId = request.params.id;
       const { title, content } = request.body;
 
-      const updatedPost = await findPostAndUpdate(server)(
-        {
-          _id: postId,
-          author: user.id,
-        },
-        {
+      const updatedPost = await findPostAndUpdate(server)({
+        data: {
           title,
           content,
         },
-      );
+        where: {
+          _id: postId,
+          author: user.id,
+        },
+      });
       if (!updatedPost) {
         return reply.status(404).send({
           message: 'post not found',
@@ -142,7 +140,6 @@ const postRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     },
     async (request, reply) => {
       const user = request.user as JwtUserPayload;
-
       const postId = request.params.id;
 
       const deletedPost = await findPostAndDelete(server)({

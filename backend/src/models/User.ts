@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import idPlugin from 'mongoose-id';
 
 export type User = mongoose.Document & {
+  id: string;
   createdAt: Date;
   updatedAt: Date;
 

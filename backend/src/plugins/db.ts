@@ -3,8 +3,9 @@ import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import mongoose from 'mongoose';
 
 import { config } from '../config';
-import { UserSchema } from '../models/User';
-import { PostSchema } from '../models/Post';
+import { userSchema } from '../models/user';
+import { postSchema } from '../models/post';
+import { commentSchema } from '../models/comment';
 
 const dbPlugin: FastifyPluginAsyncTypebox = async (server, _) => {
   const conn = await mongoose.connect(config.MONGO_DB_URI, {
@@ -13,8 +14,9 @@ const dbPlugin: FastifyPluginAsyncTypebox = async (server, _) => {
   });
 
   server.decorate('store', {
-    User: conn.model('User', UserSchema),
-    Post: conn.model('Post', PostSchema),
+    User: conn.model('User', userSchema),
+    Post: conn.model('Post', postSchema),
+    Comment: conn.model('Comment', commentSchema),
     db: conn,
   });
 

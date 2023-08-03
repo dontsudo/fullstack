@@ -1,10 +1,9 @@
-import {
-  Type,
-  FastifyPluginAsyncTypebox,
-} from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { findUserByEmail } from '../../services/user';
-import { JwtUserPayload } from '../../plugins/jwt';
+import { userResponseSchema } from './schema';
+import { findUserByEmail } from '../../../services/user';
+import { JwtUserPayload } from '../../../plugins/jwt';
+import { errorResponseSchema } from '../../common';
 
 const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
@@ -12,12 +11,8 @@ const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     {
       schema: {
         response: {
-          200: Type.Object({
-            email: Type.String(),
-          }),
-          401: Type.Object({
-            message: Type.String(),
-          }),
+          200: userResponseSchema,
+          401: errorResponseSchema,
         },
       },
       onRequest: [server.authenticate],
@@ -28,12 +23,14 @@ const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
       const me = await findUserByEmail(server)(user.email);
       if (!me) {
         return reply.code(401).send({
+          status: 401,
           message: 'user not found',
         });
       }
 
-      server.log.debug('🤔 Who am I?', me);
-      return reply.send(me);
+      server.log.info(`me: ${me}`);
+
+      return reply.status(200).send(me);
     },
   );
 };

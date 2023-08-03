@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
 
-import { User } from '../models/User';
+import { User } from '../models/user';
 
 export const findUserById = (server: FastifyInstance) => {
   const userModel = server.store.User;

@@ -1,20 +1,20 @@
-import {
-  Type,
-  FastifyPluginAsyncTypebox,
-} from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import bcrypt from 'bcrypt';
 
-import { createUser, findUserByEmail } from '../../services/user';
+import { createUser, findUserByEmail } from '../../../services/user';
+import { authLocalBodySchema, authResponseSchema } from './schema';
+import { errorResponseSchema } from '../../common';
 
 const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.post(
     '/auth/local/register',
     {
       schema: {
-        body: Type.Object({
-          email: Type.String(),
-          password: Type.String(),
-        }),
+        body: authLocalBodySchema,
+        response: {
+          201: authResponseSchema,
+          409: errorResponseSchema,
+        },
       },
     },
     async (request, reply) => {
@@ -23,6 +23,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
       const user = await findUserByEmail(server)(email);
       if (user) {
         return reply.code(409).send({
+          status: 409,
           message: 'user already exists',
         });
       }
@@ -33,7 +34,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
       });
 
       const accessToken = await reply.jwtSign({
-        id: newUser._id,
+        id: newUser.id,
         email: newUser.email,
       });
 
@@ -47,10 +48,11 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     '/auth/local/login',
     {
       schema: {
-        body: Type.Object({
-          email: Type.String(),
-          password: Type.String(),
-        }),
+        body: authLocalBodySchema,
+        response: {
+          201: authResponseSchema,
+          409: errorResponseSchema,
+        },
       },
     },
     async (request, reply) => {
@@ -58,16 +60,16 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
 
       const user = await findUserByEmail(server)(email);
       if (!user) {
-        return reply.code(401).send({
-          message: 'invalid crednetials',
-        });
+        return reply
+          .code(401)
+          .send({ status: 401, message: 'invalid crednetials' });
       }
 
       const valid = await bcrypt.compare(password, user.hashedPassword);
       if (!valid) {
-        return reply.code(401).send({
-          message: 'invalid crednetials',
-        });
+        return reply
+          .code(401)
+          .send({ status: 401, message: 'invalid crednetials' });
       }
 
       const accessToken = await reply.jwtSign({
