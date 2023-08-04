@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { config } from '../config';
 import { userSchema } from '../models/user';
 import { postSchema } from '../models/post';
+import { tagSchema } from '../models/tag';
 import { commentSchema } from '../models/comment';
 
 const dbPlugin: FastifyPluginAsyncTypebox = async (server, _) => {
@@ -16,6 +17,7 @@ const dbPlugin: FastifyPluginAsyncTypebox = async (server, _) => {
   server.decorate('store', {
     User: conn.model('User', userSchema),
     Post: conn.model('Post', postSchema),
+    Tag: conn.model('Tag', tagSchema),
     Comment: conn.model('Comment', commentSchema),
     db: conn,
   });

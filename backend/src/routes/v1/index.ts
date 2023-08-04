@@ -1,14 +1,13 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import { userResponseSchema } from '../../schemas/user';
+import { errorResponseSchema } from '../../schemas/common';
+import { JwtUserPayload } from '../../plugins/jwt';
+import { findUserByEmail } from '../../services/users';
+import { NotFoundException } from '../../lib/http-exception';
 
-import { userResponseSchema } from './schema';
-import { findUserByEmail } from '../../../services/user';
-import { JwtUserPayload } from '../../../plugins/jwt';
-import { errorResponseSchema } from '../../common';
-import { NotFoundException } from '../../../lib/http-exception';
-
-const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
+const indexRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
-    '/user/me',
+    '/me',
     {
       schema: {
         response: {
@@ -31,4 +30,4 @@ const userRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   );
 };
 
-export default userRoute;
+export default indexRoute;

@@ -1,21 +1,26 @@
-import mongoose from 'mongoose';
+import { Schema, Document } from 'mongoose';
 import idPlugin from 'mongoose-id';
 
-export type Post = mongoose.Document & {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+import { Comment } from './comment';
+import { User } from './user';
+import { Tag } from './tag';
 
+export interface Post extends Document {
+  id: string;
   title: string;
   content: string;
-  author: mongoose.Types.ObjectId;
-  tags: mongoose.Types.ObjectId[];
-};
+  author: User;
+  comments: Comment[];
+  tags: Tag[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export const postSchema = new mongoose.Schema<Post>(
+export const postSchema = new Schema<Post>(
   {
     title: {
       type: String,
+      required: true,
       index: true,
     },
     content: {
@@ -23,22 +28,26 @@ export const postSchema = new mongoose.Schema<Post>(
       required: true,
     },
     author: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
+    comments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+      },
+    ],
     tags: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Tag',
       },
     ],
-    createdAt: Date,
-    updatedAt: Date,
   },
   {
-    autoCreate: true,
     timestamps: true,
+    autoCreate: true,
   },
 );
 

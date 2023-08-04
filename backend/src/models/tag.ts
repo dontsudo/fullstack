@@ -1,33 +1,33 @@
-import mongoose from 'mongoose';
+import { Schema, Document } from 'mongoose';
 import idPlugin from 'mongoose-id';
 
-export type Tag = mongoose.Document & {
+import { Post } from './post';
+
+export interface Tag extends Document {
   id: string;
+  name: string;
+  posts: Post[];
   createdAt: Date;
   updatedAt: Date;
+}
 
-  name: string;
-  posts: mongoose.Types.ObjectId[];
-};
-
-export const tagSchema = new mongoose.Schema<Tag>(
+export const tagSchema = new Schema<Tag>(
   {
     name: {
       type: String,
+      required: true,
       index: true,
     },
     posts: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'Post',
       },
     ],
-    createdAt: Date,
-    updatedAt: Date,
   },
   {
-    autoCreate: true,
     timestamps: true,
+    autoCreate: true,
   },
 );
 

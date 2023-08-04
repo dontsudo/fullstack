@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 import { FastifyPluginAsync, RouteHandlerMethod } from 'fastify';
 import jwt, { FastifyJWTOptions } from '@fastify/jwt';
+import { InvalidCredentialsException } from '../lib/http-exception';
 
 export type JwtUserPayload = {
   id: string;
@@ -16,7 +17,8 @@ const jwtPlugin: FastifyPluginAsync<FastifyJWTOptions> = async (
     try {
       await request.jwtVerify();
     } catch (error) {
-      throw new Error('Authentication failed');
+      server.log.error(error);
+      throw new InvalidCredentialsException('invalid credentials');
     }
   }) as RouteHandlerMethod);
 };

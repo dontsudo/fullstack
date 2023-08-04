@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { findUserByEmail } from '../../../services/user';
-import { authLocalBodySchema, authResponseSchema } from './schema';
-import { errorResponseSchema } from '../../common';
+import { findUserByEmail } from '../../../services/users';
+import { authLocalBodySchema, authResponseSchema } from '../../../schemas/auth';
+import { errorResponseSchema } from '../../../schemas/common';
 import { registerUser } from '../../../services/auth';
 import { InvalidCredentialsException } from '../../../lib/http-exception';
 

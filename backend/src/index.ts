@@ -4,7 +4,7 @@ import { config } from './config';
 const run = async () => {
   const server = await init({
     logger: {
-      level: 'info',
+      level: 'debug',
       transport: {
         target: 'pino-pretty',
       },

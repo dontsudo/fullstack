@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { findUserByEmail } from './user';
+import { findUserByEmail } from './users';
 import { HttpException } from '../lib/http-exception';
 
 export const registerUser = (server: FastifyInstance) => {

@@ -1,19 +1,19 @@
-import mongoose from 'mongoose';
+import { Schema, Document } from 'mongoose';
 import idPlugin from 'mongoose-id';
 
-export type User = mongoose.Document & {
+export interface User extends Document {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
-
   email: string;
   hashedPassword: string;
-};
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-export const userSchema = new mongoose.Schema<User>(
+export const userSchema = new Schema<User>(
   {
     email: {
       type: String,
+      required: true,
       index: true,
       unique: true,
     },
@@ -21,12 +21,10 @@ export const userSchema = new mongoose.Schema<User>(
       type: String,
       required: true,
     },
-    createdAt: Date,
-    updatedAt: Date,
   },
   {
-    autoCreate: true,
     timestamps: true,
+    autoCreate: true,
   },
 );
 
