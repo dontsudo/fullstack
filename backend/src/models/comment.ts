@@ -1,31 +1,22 @@
-import mongoose from 'mongoose';
-import idPlugin from 'mongoose-id';
+import { Document, Schema } from 'mongoose';
 
-import { Post } from './post';
 import { User } from './user';
 
-export interface Comment extends mongoose.Document {
-  id: string;
-  content: string;
-  post: Post;
-  author: User;
+export interface Comment extends Document {
   createdAt: Date;
   updatedAt: Date;
+  content: string;
+  author: User;
 }
 
-export const commentSchema = new mongoose.Schema<Comment>(
+export const commentSchema = new Schema<Comment>(
   {
     content: {
       type: String,
       required: true,
     },
-    post: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
-      required: true,
-    },
     author: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
@@ -35,5 +26,3 @@ export const commentSchema = new mongoose.Schema<Comment>(
     autoCreate: true,
   },
 );
-
-commentSchema.plugin(idPlugin);

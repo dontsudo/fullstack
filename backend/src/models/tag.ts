@@ -1,10 +1,8 @@
 import { Schema, Document } from 'mongoose';
-import idPlugin from 'mongoose-id';
 
 import { Post } from './post';
 
 export interface Tag extends Document {
-  id: string;
   name: string;
   posts: Post[];
   createdAt: Date;
@@ -30,5 +28,3 @@ export const tagSchema = new Schema<Tag>(
     autoCreate: true,
   },
 );
-
-tagSchema.plugin(idPlugin);

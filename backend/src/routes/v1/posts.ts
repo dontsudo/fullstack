@@ -7,28 +7,22 @@ import {
   createPostBodySchema,
   postListResponseSchema,
   postResponseSchema,
-  postSchema,
   updatePostBodySchema,
-} from '../../../schemas/post';
+} from '../../schemas/post';
 import {
   createPost,
   getPostById,
   findPostAndDelete,
   findPostAndUpdate,
   getPosts,
-} from '../../../services/posts';
-import { JwtUserPayload } from '../../../plugins/jwt';
+} from '../../services/post';
+import { JwtUserPayload } from '../../plugins/jwt';
 import {
   errorResponseSchema,
   paginationQueryStringSchema,
-} from '../../../schemas/common';
-import { NotFoundException } from '../../../lib/http-exception';
-import { Post } from '../../../models/post';
-
-const transformPostResponse = (post: Post) => ({
-  ...post.toObject(),
-  tags: post.tags.map((tag) => tag.name),
-});
+} from '../../schemas/common';
+import { NotFoundError } from '../../lib/httpError';
+import { Post } from '../../models/post';
 
 const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
@@ -38,6 +32,7 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         querystring: paginationQueryStringSchema,
         response: {
           200: postListResponseSchema,
+          404: errorResponseSchema,
         },
       },
     },
@@ -49,30 +44,32 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         page,
       });
 
-      return reply.send(posts.map((post) => transformPostResponse(post)));
+      return reply.send(posts.map(transformPostResponse));
     },
   );
 
   server.get(
-    '/posts/:id',
+    '/posts/:postId',
     {
       schema: {
-        params: Type.Object({ id: Type.String() }),
+        params: Type.Object({
+          postId: Type.String(),
+        }),
         response: {
-          200: postSchema,
+          200: postResponseSchema,
           404: errorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      const { id } = request.params;
+      const { postId } = request.params;
 
-      const post = await getPostById(server)(id);
+      const post = await getPostById(server)(postId);
       if (!post) {
-        throw new NotFoundException('post not found');
+        throw new NotFoundError('post not found');
       }
 
-      return reply.status(200).send(transformPostResponse(post));
+      return reply.send(transformPostResponse(post));
     },
   );
 
@@ -96,16 +93,16 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         author: user.id,
       });
 
-      return reply.status(201).send(transformPostResponse(post));
+      return reply.status(201).send();
     },
   );
 
   server.patch(
-    '/posts/:id',
+    '/posts/:postId',
     {
       schema: {
         params: Type.Object({
-          id: Type.String(),
+          postId: Type.String(),
         }),
         body: updatePostBodySchema,
         response: {
@@ -117,7 +114,7 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     },
     async (request, reply) => {
       const user = request.user as JwtUserPayload;
-      const postId = request.params.id;
+      const { postId } = request.params;
       const { title, content } = request.body;
 
       const updatedPost = await findPostAndUpdate(server)({
@@ -131,7 +128,7 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
         },
       });
       if (!updatedPost) {
-        throw new NotFoundException('post not found');
+        throw new NotFoundError('post not found');
       }
 
       return reply.send(transformPostResponse(updatedPost));
@@ -139,11 +136,11 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   );
 
   server.delete(
-    '/posts/:id',
+    '/posts/:postId',
     {
       schema: {
         params: Type.Object({
-          id: Type.String(),
+          postId: Type.String(),
         }),
         response: {
           404: errorResponseSchema,
@@ -153,14 +150,14 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     },
     async (request, reply) => {
       const user = request.user as JwtUserPayload;
-      const postId = request.params.id;
+      const postId = request.params.postId;
 
       const deletedPost = await findPostAndDelete(server)({
         _id: postId,
         author: user.id,
       });
       if (!deletedPost) {
-        throw new NotFoundException('post not found');
+        throw new NotFoundError('post not found');
       }
 
       return reply.status(204).send();
@@ -169,3 +166,8 @@ const postsRoute: FastifyPluginAsyncTypebox = async (server, _) => {
 };
 
 export default postsRoute;
+
+const transformPostResponse = (post: Post) => ({
+  ...post.toObject(),
+  tags: post.tags.map((tag) => tag.name),
+});

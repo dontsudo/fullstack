@@ -1,8 +1,7 @@
 import { Type } from '@fastify/type-provider-typebox';
-import { objectSchema } from './common';
+import { entitySchema } from './common';
 
 export const userSchemas = Type.Composite([
-  Type.Omit(objectSchema, ['createdAt', 'updatedAt']),
   Type.Object({
     email: Type.String({
       format: 'email',
@@ -12,6 +11,9 @@ export const userSchemas = Type.Composite([
       maxLength: 255,
     }),
   }),
+  entitySchema,
 ]);
 
-export const userResponseSchema = Type.Omit(userSchemas, ['hashedPassword']);
+export const userWithoutPassword = Type.Omit(userSchemas, ['hashedPassword']);
+
+export const userResponseSchema = userWithoutPassword;

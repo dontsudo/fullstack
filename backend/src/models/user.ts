@@ -1,12 +1,10 @@
 import { Schema, Document } from 'mongoose';
-import idPlugin from 'mongoose-id';
 
 export interface User extends Document {
-  id: string;
-  email: string;
-  hashedPassword: string;
   createdAt: Date;
   updatedAt: Date;
+  email: string;
+  hashedPassword: string;
 }
 
 export const userSchema = new Schema<User>(
@@ -27,5 +25,3 @@ export const userSchema = new Schema<User>(
     autoCreate: true,
   },
 );
-
-userSchema.plugin(idPlugin);

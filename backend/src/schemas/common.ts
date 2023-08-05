@@ -1,7 +1,7 @@
 import { Type } from '@fastify/type-provider-typebox';
 
-export const objectSchema = Type.Object({
-  id: Type.String(),
+export const entitySchema = Type.Object({
+  _id: Type.Optional(Type.String()),
   createdAt: Type.Unsafe<Date>({
     type: 'string',
     format: 'date-format',

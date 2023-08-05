@@ -2,12 +2,10 @@ import { FastifyInstance } from 'fastify';
 import { FilterQuery, UpdateQuery } from 'mongoose';
 
 import { Post } from '../models/post';
-import { upsertTags } from './tags';
+import { upsertTags } from './tag';
 import { CreatePost, UpdatePost } from '../schemas/post';
 
 export const getPosts = (server: FastifyInstance) => {
-  const postModel = server.store.Post;
-
   return async ({
     where = {},
     page,
@@ -17,9 +15,8 @@ export const getPosts = (server: FastifyInstance) => {
     page: number;
     limit: number;
   }) => {
-    return postModel
-      .find(where)
-      .select('-content') // exclude content
+    return server.store.Post.find(where)
+      .select('-content')
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('author')
@@ -28,25 +25,34 @@ export const getPosts = (server: FastifyInstance) => {
 };
 
 export const getPostById = (server: FastifyInstance) => {
-  const postModel = server.store.Post;
-
   return async (id: string) => {
-    return postModel.findById(id).populate('author').populate('comments');
+    return server.store.Post.findById(id)
+      .populate('author')
+      .populate('tags')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'author',
+          model: 'User',
+        },
+      });
   };
 };
 
 export const createPost = (server: FastifyInstance) => {
-  const postModel = server.store.Post;
-
-  return async ({ title, content, author, tags = [] }: CreatePost) => {
+  return async ({ title, content, author, tags }: CreatePost) => {
     const resolvedTags = await upsertTags(server)(tags);
-    return postModel.create({ title, content, author, tags: resolvedTags });
+
+    return server.store.Post.create({
+      title,
+      content,
+      author,
+      tags: resolvedTags,
+    });
   };
 };
 
 export const findPostAndUpdate = (server: FastifyInstance) => {
-  const postModel = server.store.Post;
-
   return async ({
     where,
     data,
@@ -59,16 +65,14 @@ export const findPostAndUpdate = (server: FastifyInstance) => {
       tags: data.tags ? await upsertTags(server)(data.tags) : undefined,
     };
 
-    return postModel.findOneAndUpdate(where, updateData, {
+    return server.store.Post.findOneAndUpdate(where, updateData, {
       new: true,
     });
   };
 };
 
 export const findPostAndDelete = (server: FastifyInstance) => {
-  const postModel = server.store.Post;
-
   return async (where: FilterQuery<Post>) => {
-    return postModel.findOneAndDelete(where);
+    return server.store.Post.findOneAndDelete(where);
   };
 };

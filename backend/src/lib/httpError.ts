@@ -1,4 +1,4 @@
-export class HttpException extends Error {
+export class HttpError extends Error {
   constructor(
     public readonly status: number,
     public readonly message: string,
@@ -7,13 +7,13 @@ export class HttpException extends Error {
   }
 }
 
-export class InvalidCredentialsException extends HttpException {
+export class InvalidCredentialsError extends HttpError {
   constructor(public readonly message: string) {
     super(401, message);
   }
 }
 
-export class NotFoundException extends HttpException {
+export class NotFoundError extends HttpError {
   constructor(public readonly message: string) {
     super(404, message);
   }

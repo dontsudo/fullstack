@@ -1,19 +1,17 @@
 import { Schema, Document } from 'mongoose';
-import idPlugin from 'mongoose-id';
 
 import { Comment } from './comment';
 import { User } from './user';
 import { Tag } from './tag';
 
 export interface Post extends Document {
-  id: string;
+  createdAt: Date;
+  updatedAt: Date;
   title: string;
   content: string;
   author: User;
-  comments: Comment[];
   tags: Tag[];
-  createdAt: Date;
-  updatedAt: Date;
+  comments: Comment[];
 }
 
 export const postSchema = new Schema<Post>(
@@ -50,5 +48,3 @@ export const postSchema = new Schema<Post>(
     autoCreate: true,
   },
 );
-
-postSchema.plugin(idPlugin);

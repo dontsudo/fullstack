@@ -1,7 +1,7 @@
 import { init } from './server';
 import { config } from './config';
 
-const run = async () => {
+const main = async () => {
   const server = await init({
     logger: {
       level: 'debug',
@@ -24,4 +24,4 @@ const run = async () => {
   );
 };
 
-run();
+main();

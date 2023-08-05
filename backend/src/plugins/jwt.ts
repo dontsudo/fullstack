@@ -1,7 +1,8 @@
+import mongoose from 'mongoose';
 import fp from 'fastify-plugin';
 import { FastifyPluginAsync, RouteHandlerMethod } from 'fastify';
 import jwt, { FastifyJWTOptions } from '@fastify/jwt';
-import { InvalidCredentialsException } from '../lib/http-exception';
+import { InvalidCredentialsError } from '../lib/httpError';
 
 export type JwtUserPayload = {
   id: string;
@@ -18,7 +19,7 @@ const jwtPlugin: FastifyPluginAsync<FastifyJWTOptions> = async (
       await request.jwtVerify();
     } catch (error) {
       server.log.error(error);
-      throw new InvalidCredentialsException('invalid credentials');
+      throw new InvalidCredentialsError('invalid credentials');
     }
   }) as RouteHandlerMethod);
 };

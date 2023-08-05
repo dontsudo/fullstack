@@ -1,21 +1,21 @@
 import { FastifyInstance } from 'fastify';
-import { findUserByEmail } from './users';
-import { HttpException } from '../lib/http-exception';
 
-export const registerUser = (server: FastifyInstance) => {
+import { findUserByEmail } from './user';
+import { HttpError } from '../lib/httpError';
+import { User } from '../models/user';
+
+export const register = (server: FastifyInstance) => {
   const userModel = server.store.User;
 
-  return async (email: string, password: string) => {
+  return async (email: string, password: string): Promise<User> => {
     const user = await findUserByEmail(server)(email);
     if (user) {
-      throw new HttpException(401, 'user already exists');
+      throw new HttpError(401, 'user already exists');
     }
 
-    const newUser = await userModel.create({
+    return userModel.create({
       email: email,
       password: password,
     });
-
-    return newUser;
   };
 };

@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { findUserByEmail } from '../../../services/users';
-import { authLocalBodySchema, authResponseSchema } from '../../../schemas/auth';
-import { errorResponseSchema } from '../../../schemas/common';
-import { registerUser } from '../../../services/auth';
-import { InvalidCredentialsException } from '../../../lib/http-exception';
+import { findUserByEmail } from '../../services/user';
+import { authLocalBodySchema, authResponseSchema } from '../../schemas/auth';
+import { errorResponseSchema } from '../../schemas/common';
+import { register } from '../../services/auth';
+import { InvalidCredentialsError } from '../../lib/httpError';
 
 const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.post(
@@ -22,7 +22,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const user = await registerUser(server)(email, password);
+      const user = await register(server)(email, password);
 
       const accessToken = await reply.jwtSign({
         id: user._id,
@@ -51,12 +51,12 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
 
       const user = await findUserByEmail(server)(email);
       if (!user) {
-        throw new InvalidCredentialsException('invalid credentials');
+        throw new InvalidCredentialsError('invalid credentials');
       }
 
       const valid = await bcrypt.compare(password, user.hashedPassword);
       if (!valid) {
-        throw new InvalidCredentialsException('invalid credentials');
+        throw new InvalidCredentialsError('invalid credentials');
       }
 
       const accessToken = await reply.jwtSign({
