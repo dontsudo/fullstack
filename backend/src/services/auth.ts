@@ -1,21 +1,29 @@
-import { FastifyInstance } from 'fastify';
+import bcrypt from 'bcrypt';
 
-import { findUserByEmail } from './user';
+import prisma from '../lib/prisma';
 import { HttpError } from '../lib/httpError';
-import { User } from '../models/user';
+import { RegisterLocal } from '../schemas/auth';
 
-export const register = (server: FastifyInstance) => {
-  const userModel = server.store.User;
+const registerLocal = async ({ name, email, password }: RegisterLocal) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
 
-  return async (email: string, password: string): Promise<User> => {
-    const user = await findUserByEmail(server)(email);
-    if (user) {
-      throw new HttpError(401, 'user already exists');
-    }
+  if (user) {
+    throw new HttpError(401, 'user already exists');
+  }
 
-    return userModel.create({
-      email: email,
-      password: password,
-    });
-  };
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  return prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+    },
+  });
 };
+
+export { registerLocal };

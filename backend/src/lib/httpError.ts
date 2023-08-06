@@ -1,19 +1,19 @@
 export class HttpError extends Error {
   constructor(
-    public readonly status: number,
+    public readonly statusCode: number,
     public readonly message: string,
   ) {
     super(message);
   }
 }
 
-export class InvalidCredentialsError extends HttpError {
+export class InvalidCredentials extends HttpError {
   constructor(public readonly message: string) {
     super(401, message);
   }
 }
 
-export class NotFoundError extends HttpError {
+export class NotFound extends HttpError {
   constructor(public readonly message: string) {
     super(404, message);
   }

@@ -1,10 +1,7 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
-import { userResponseSchema } from '../../schemas/user';
-import { errorResponseSchema } from '../../schemas/common';
-import { JwtUserPayload } from '../../plugins/jwt';
-import { findUserByEmail } from '../../services/user';
-import { NotFoundError } from '../../lib/httpError';
+import { findUserById } from '../../services/user';
+import { userWithoutPasswordSchema } from '../../schemas/user';
 
 const indexRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.get(
@@ -12,21 +9,16 @@ const indexRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     {
       schema: {
         response: {
-          200: userResponseSchema,
-          401: errorResponseSchema,
+          200: userWithoutPasswordSchema,
         },
+        security: [{ bearerAuth: [] }],
       },
       onRequest: [server.authenticate],
     },
     async (request, reply) => {
-      const user = request.user as JwtUserPayload;
+      const user = await findUserById(request.user.id);
 
-      const me = await findUserByEmail(server)(user.email);
-      if (!me) {
-        throw new NotFoundError('User not found');
-      }
-
-      return reply.status(200).send(me);
+      reply.status(200).send(user);
     },
   );
 };

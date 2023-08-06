@@ -1,78 +1,66 @@
-import { FastifyInstance } from 'fastify';
-import { FilterQuery, UpdateQuery } from 'mongoose';
-
-import { Post } from '../models/post';
-import { upsertTags } from './tag';
+import { NotFound } from '../lib/httpError';
+import prisma from '../lib/prisma';
 import { CreatePost, UpdatePost } from '../schemas/post';
 
-export const getPosts = (server: FastifyInstance) => {
-  return async ({
-    where = {},
-    page,
-    limit,
-  }: {
-    where?: FilterQuery<Post>;
-    page: number;
-    limit: number;
-  }) => {
-    return server.store.Post.find(where)
-      .select('-content')
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate('author')
-      .populate('tags');
-  };
-};
-
-export const getPostById = (server: FastifyInstance) => {
-  return async (id: string) => {
-    return server.store.Post.findById(id)
-      .populate('author')
-      .populate('tags')
-      .populate({
-        path: 'comments',
-        populate: {
-          path: 'author',
-          model: 'User',
-        },
-      });
-  };
-};
-
-export const createPost = (server: FastifyInstance) => {
-  return async ({ title, content, author, tags }: CreatePost) => {
-    const resolvedTags = await upsertTags(server)(tags);
-
-    return server.store.Post.create({
-      title,
-      content,
-      author,
-      tags: resolvedTags,
-    });
-  };
-};
-
-export const findPostAndUpdate = (server: FastifyInstance) => {
-  return async ({
-    where,
-    data,
-  }: {
-    where: FilterQuery<Post>;
-    data: UpdatePost;
-  }) => {
-    const updateData: UpdateQuery<Post> = {
+const createPost = async (data: CreatePost, authorId: string) => {
+  return prisma.post.create({
+    data: {
       ...data,
-      tags: data.tags ? await upsertTags(server)(data.tags) : undefined,
-    };
-
-    return server.store.Post.findOneAndUpdate(where, updateData, {
-      new: true,
-    });
-  };
+      authorId,
+    },
+  });
 };
 
-export const findPostAndDelete = (server: FastifyInstance) => {
-  return async (where: FilterQuery<Post>) => {
-    return server.store.Post.findOneAndDelete(where);
-  };
+const findPosts = async ({ page, limit }) => {
+  const posts = await prisma.post.findMany({
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+
+  const hasMore = posts.length === limit;
+
+  return { data: posts, hasMore };
+};
+
+const findPostById = async (id: string) => {
+  const post = await prisma.post.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!post) {
+    throw new NotFound('post not found');
+  }
+
+  return post;
+};
+
+const updatePost = async (id: string, data: UpdatePost, authorId: string) => {
+  const updatedPost = await prisma.post.update({
+    where: {
+      id,
+      authorId,
+    },
+    data,
+  });
+
+  return updatedPost;
+};
+
+const removePost = async (id: string, authorId: string) => {
+  return prisma.post.delete({
+    where: {
+      id,
+      authorId,
+    },
+  });
+};
+
+export {
+  createPost,
+  findPosts,
+  findPostById,
+  updatePost,
+  removePost as deletePost,
 };

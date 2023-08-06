@@ -14,15 +14,10 @@ const schema = Type.Object({
     }),
   ),
 
-  // db config
-  MONGO_DB_URI: Type.String({
-    default: 'mongodb://localhost:27017',
-  }),
-  MONGO_DB_USER: Type.String({
-    default: 'root',
-  }),
-  MONGO_DB_PASS: Type.String({
-    default: 'example',
+  // db config (for `prisma`)
+  DATABASE_URL: Type.String({
+    default: 'postgresql://postgres:postgres@localhost:5432/mydb?schema=public',
+    description: 'PostgreSQL database url',
   }),
 
   // jwt config
@@ -36,6 +31,8 @@ const schema = Type.Object({
 
 type Schema = Static<typeof schema>;
 
-export const config = envSchema<Schema>({
+const config = envSchema<Schema>({
   schema,
 });
+
+export default config;

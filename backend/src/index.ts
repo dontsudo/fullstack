@@ -1,5 +1,5 @@
+import config from './config';
 import { init } from './server';
-import { config } from './config';
 
 const main = async () => {
   const server = await init({

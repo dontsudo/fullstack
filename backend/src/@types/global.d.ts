@@ -1,19 +1,14 @@
-import mongoose from 'mongoose';
-
-import { User } from '../models/user';
-import { Post } from '../models/post';
-import { Comment } from '../models/comment';
-import { Tag } from '../models/tag';
+import type { JwtUserPayload } from '../plugins/jwt';
 
 declare module 'fastify' {
-  export interface FastifyInstance {
-    store: {
-      User: mongoose.Model<User>;
-      Post: mongoose.Model<Post>;
-      Tag: mongoose.Model<Tag>;
-      Comment: mongoose.Model<Comment>;
-      db: typeof mongoose;
-    };
+  interface FastifyInstance {
     authenticate: RouteHandlerMethod;
+  }
+}
+
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: { id: string };
+    user: { id: string };
   }
 }

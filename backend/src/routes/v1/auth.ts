@@ -2,31 +2,37 @@ import bcrypt from 'bcrypt';
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 
 import { findUserByEmail } from '../../services/user';
-import { authLocalBodySchema, authResponseSchema } from '../../schemas/auth';
+import { registerLocal } from '../../services/auth';
+import {
+  registerLocalBodySchema,
+  authResponseSchema,
+  loginLocalBodySchema,
+} from '../../schemas/auth';
 import { errorResponseSchema } from '../../schemas/common';
-import { register } from '../../services/auth';
-import { InvalidCredentialsError } from '../../lib/httpError';
+import { InvalidCredentials } from '../../lib/httpError';
 
 const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
   server.post(
     '/auth/local/register',
     {
       schema: {
-        body: authLocalBodySchema,
+        body: registerLocalBodySchema,
         response: {
           201: authResponseSchema,
-          409: errorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      const { email, password } = request.body;
+      const { name, email, password } = request.body;
 
-      const user = await register(server)(email, password);
+      const user = await registerLocal({
+        name,
+        email,
+        password,
+      });
 
       const accessToken = await reply.jwtSign({
-        id: user._id,
-        email: user.email,
+        id: user.id,
       });
 
       return reply.code(201).send({
@@ -39,7 +45,7 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     '/auth/local/login',
     {
       schema: {
-        body: authLocalBodySchema,
+        body: loginLocalBodySchema,
         response: {
           201: authResponseSchema,
           409: errorResponseSchema,
@@ -49,19 +55,18 @@ const authRoute: FastifyPluginAsyncTypebox = async (server, _) => {
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const user = await findUserByEmail(server)(email);
+      const user = await findUserByEmail(email);
       if (!user) {
-        throw new InvalidCredentialsError('invalid credentials');
+        throw new InvalidCredentials('invalid credentials');
       }
 
-      const valid = await bcrypt.compare(password, user.hashedPassword);
+      const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
-        throw new InvalidCredentialsError('invalid credentials');
+        throw new InvalidCredentials('invalid credentials');
       }
 
       const accessToken = await reply.jwtSign({
-        id: user._id,
-        email: user.email,
+        id: user.id,
       });
 
       return reply.code(201).send({

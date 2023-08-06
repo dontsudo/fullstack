@@ -1,17 +1,17 @@
 import { Static, Type } from '@fastify/type-provider-typebox';
 
 import { entitySchema } from './common';
-import { userWithoutPassword } from './user';
+import { userWithoutPasswordSchema } from './user';
 
 export const commentSchema = Type.Composite([
-  entitySchema,
   Type.Object({
     content: Type.String({
       minLength: 5,
       maxLength: 255,
     }),
-    author: userWithoutPassword,
+    author: userWithoutPasswordSchema,
   }),
+  entitySchema,
 ]);
 
 export const commentResponseSchema = commentSchema;

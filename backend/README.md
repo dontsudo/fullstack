@@ -1,16 +1,15 @@
 # @fullstack/backend
 
-## API
+## prisma cli
 
-- /v1
-  - GET /me
-  - /auth
-    - /local
-      - POST /register
-      - POST /login
-  - /posts
-    - GET /
-    - POST /
-    - PATCH /:postId
-    - DELETE /:postId
-    - /:postId/comments
+- migration
+
+```bash
+$
+```
+
+- generate prisma client
+
+```bash
+$ npx prisma generate
+```

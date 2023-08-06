@@ -1,40 +1,32 @@
-import { FastifyInstance } from 'fastify';
-import bcrypt from 'bcrypt';
+import { NotFound } from '../lib/httpError';
+import prisma from '../lib/prisma';
 
-import { User } from '../models/user';
+const findUserById = async (id: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+  });
 
-export const findUserById = (server: FastifyInstance) => {
-  const userModel = server.store.User;
+  if (!user) {
+    throw new NotFound('user not found');
+  }
 
-  return async (id: string): Promise<User | null> => {
-    const user = await userModel.findById(id);
-
-    return user;
-  };
+  return user;
 };
 
-export const findUserByEmail = (server: FastifyInstance) => {
-  const userModel = server.store.User;
-
-  return async (email: string): Promise<User | null> => {
-    const user = await userModel.findOne({
+const findUserByEmail = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
       email,
-    });
+    },
+  });
 
-    return user;
-  };
+  if (!user) {
+    throw new NotFound('user not found');
+  }
+
+  return user;
 };
 
-export const createUser = (server: FastifyInstance) => {
-  const userModel = server.store.User;
-
-  return async ({ email, password }): Promise<User> => {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await userModel.create({
-      email,
-      hashedPassword,
-    });
-
-    return user;
-  };
-};
+export { findUserById, findUserByEmail };
